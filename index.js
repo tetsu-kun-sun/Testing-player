@@ -84,8 +84,8 @@ const App = () => {
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-[#F3F4F6]">
       <div className="max-w-4xl w-full">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold mb-3 text-gray-800">Тест H.265</h1>
-          <p className="text-gray-500">Проверьте поддержку HEVC в вашем браузере</p>
+          <h1 className="text-4xl font-extrabold mb-3 text-gray-800">Тест воспроизведения в разных форматах</h1>
+          <p className="text-gray-500">Проверьте поддержку HEVC на вашем устройстве</p>
         </div>
 
         <${CodecSwitch} activeCodec=${activeCodec} onToggle=${handleCodecChange} />
@@ -122,12 +122,12 @@ const App = () => {
         <div className="mt-8 flex flex-col items-center">
           <div className="px-8 py-4 bg-white shadow-md rounded-2xl border border-gray-100 flex flex-col items-center">
             <span className="text-xs text-gray-400 uppercase tracking-widest font-bold">Статус</span>
-            <span className="text-xl font-black text-[#8B5CF6]">${isPlaying ? 'ИГРАЕТ' : error ? 'ОШИБКА' : 'ПАУЗА'}</span>
+            <span className="text-xl font-black text-[#8B5CF6]">${isPlaying ? 'Воспроизведение' : error ? 'Ошибка' : 'Пауза'}</span>
           </div>
           
           <div className="mt-6 flex items-start space-x-3 max-w-md bg-blue-50 p-4 rounded-xl border border-blue-100">
             <${Info} className="text-blue-500 shrink-0 mt-0.5" size=${20} />
-            <p className="text-xs text-blue-700">H.265 (HEVC) требует поддержки на уровне железа или ОС. В Chrome на Windows часто нужно ставить расширение из Microsoft Store.</p>
+            <p className="text-xs text-blue-700">H.265(HEVC) требует поддержки на уровне браузера и устройства. На Windows часто нужно ставить расширение High Efficiency Video Coding, H.265 из Microsoft Store.</p>
           </div>
         </div>
       </div>
