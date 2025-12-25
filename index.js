@@ -28,7 +28,7 @@ const CodecSwitch = ({ activeCodec, onToggle }) => {
   `;
 };
 
-const PlayerControls = ({ isPlaying, onToggle, disabled }) => {
+const PlayerControls = ({ isPlaying, disabled }) => {
   return html`
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div
@@ -50,16 +50,10 @@ const App = () => {
   const [error, setError] = React.useState(null);
   const videoRef = React.useRef(null);
 
-  // Для Safari критически важно указывать codecs="hvc1" в типе источника
-  const videoData = {
-    [CodecType.H264]: {
-      url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_20MB.mp4',
-      mime: 'video/mp4; codecs="avc1.42E01E"'
-    },
-    [CodecType.H265]: {
-      url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h265/1080/Big_Buck_Bunny_1080_10s_20MB.mp4',
-      mime: 'video/mp4; codecs="hvc1"' // Явная метка для Safari
-    }
+  // Теперь используем локальные файлы
+  const videoUrls = {
+    [CodecType.H264]: './video_h264.mp4',
+    [CodecType.H265]: './video_h265.mp4'
   };
 
   const handleCodecChange = (codec) => {
@@ -75,9 +69,7 @@ const App = () => {
     } else {
       videoRef.current.play().catch((e) => {
         console.error("Playback error:", e);
-        setError(activeCodec === CodecType.H265 
-          ? "Safari/Браузер отклонил этот H.265 поток. Возможно, требуется кодировка hvc1 вместо hev1." 
-          : "Ошибка воспроизведения.");
+        setError("Этот формат не поддерживается вашим устройством или браузером.");
       });
     }
   };
@@ -93,7 +85,7 @@ const App = () => {
       <div className="max-w-4xl w-full mt-4 md:mt-0">
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl md:text-4xl font-black mb-2 text-gray-900 tracking-tight">HEVC TESTER</h1>
-          <p className="text-sm md:text-base text-gray-500 font-medium">Проверка аппаратной поддержки H.265</p>
+          <p className="text-sm md:text-base text-gray-500 font-medium">Проверка H.265 (Локальные файлы)</p>
         </div>
 
         <${CodecSwitch} activeCodec=${activeCodec} onToggle=${handleCodecChange} />
@@ -105,11 +97,11 @@ const App = () => {
           ${error && html`
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/95 text-white p-6 text-center backdrop-blur-md">
               <${ShieldAlert} size=${48} className="text-red-500 mb-4 md:mb-6 md:w-20 md:h-20" />
-              <h2 className="text-lg md:text-2xl font-bold mb-2">Ошибка кодека</h2>
+              <h2 className="text-lg md:text-2xl font-bold mb-2">Ошибка воспроизведения</h2>
               <p className="text-xs md:text-sm mb-6 text-gray-400 max-w-xs md:max-w-md">${error}</p>
               <button 
                 onClick=${(e) => { e.stopPropagation(); handleCodecChange(CodecType.H264); }} 
-                className="px-6 py-2 md:px-8 md:py-3 bg-white text-slate-900 rounded-full font-bold text-sm transition-transform active:scale-95"
+                className="px-6 py-2 md:px-8 md:py-3 bg-white text-slate-900 rounded-full font-bold text-sm"
               >
                 Вернуться к H.264
               </button>
@@ -123,10 +115,10 @@ const App = () => {
             onPause=${() => setIsPlaying(false)}
             playsInline
             muted
-            onError=${() => setError(`Ваше устройство не может декодировать этот ${activeCodec} файл.`)}
+            onError=${() => setError(`Файл ${videoUrls[activeCodec]} не найден или не поддерживается.`)}
             key=${activeCodec}
           >
-            <source src=${videoData[activeCodec].url} type=${videoData[activeCodec].mime} />
+            <source src=${videoUrls[activeCodec]} type="video/mp4" />
           </video>
 
           <${PlayerControls} isPlaying=${isPlaying} disabled=${!!error} />
@@ -139,23 +131,26 @@ const App = () => {
 
         <div className="mt-8 flex flex-col items-center space-y-6">
           <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
               <span className="text-[10px] text-gray-400 uppercase font-bold">Статус</span>
               <span className=${`text-sm font-extrabold ${isPlaying ? 'text-green-500' : 'text-[#8B5CF6]'}`}>
-                ${isPlaying ? 'PLAY' : 'STOP'}
+                ${isPlaying ? 'ИГРАЕТ' : 'СТОП'}
               </span>
             </div>
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center">
-              <span className="text-[10px] text-gray-400 uppercase font-bold">Кодек</span>
-              <span className="text-sm font-extrabold text-slate-700">${activeCodec.split('/')[0]}</span>
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+              <span className="text-[10px] text-gray-400 uppercase font-bold">Файл</span>
+              <span className="text-[10px] font-extrabold text-slate-700 truncate w-full">
+                ${videoUrls[activeCodec].replace('./', '')}
+              </span>
             </div>
           </div>
           
           <div className="flex items-start space-x-3 max-w-md bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             <${Info} className="text-[#8B5CF6] shrink-0" size=${20} />
             <div className="text-[11px] md:text-xs text-gray-600 leading-relaxed">
-              <p className="font-bold text-gray-800 mb-1">Заметка для Apple/Safari:</p>
-              Safari требует тега <code className="bg-gray-100 px-1 rounded text-red-500">hvc1</code>. Если видео не идет, значит сервер отдает файл с меткой <code className="bg-gray-100 px-1 rounded text-red-500">hev1</code>, которую Apple считает "нестандартной". В этом случае поможет только перекодирование файла с флагом <code className="bg-gray-100 px-1 rounded">-vtag hvc1</code>.
+              <p className="font-bold text-gray-800 mb-1">Как использовать:</p>
+              1. Положите файлы <code className="bg-gray-100 px-1 rounded text-red-500">video_h264.mp4</code> и <code className="bg-gray-100 px-1 rounded text-red-500">video_h265.mp4</code> в корень проекта.<br/>
+              2. Убедитесь, что H.265 видео имеет метку <code className="bg-gray-100 px-1 rounded text-blue-600">hvc1</code> (через FFmpeg).
             </div>
           </div>
         </div>
