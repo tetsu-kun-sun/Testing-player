@@ -52,8 +52,8 @@ const App = () => {
 
   // Теперь используем локальные файлы
   const videoUrls = {
-    [CodecType.H264]: './video_h264.mp4',
-    [CodecType.H265]: './video_h265.mp4'
+    [CodecType.H264]: './video_H264.mp4',
+    [CodecType.H265]: './video_H265.mp4'
   };
 
   const handleCodecChange = (codec) => {
